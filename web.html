@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Structure Visualizer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;background:#1a0533;min-height:100vh;overflow-x:hidden;}
+  #particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+  @keyframes float{0%{transform:translateY(100vh) rotate(0deg);opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{transform:translateY(-10vh) rotate(720deg);opacity:0;}}
+  #homePage{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:0;}
+  .home-ring{position:absolute;width:420px;height:420px;border-radius:50%;border:1.5px solid rgba(147,51,234,.18);top:50%;left:50%;transform:translate(-50%,-55%);animation:ringPulse 4s ease-in-out infinite;pointer-events:none;}
+  .home-ring2{position:absolute;width:600px;height:600px;border-radius:50%;border:1px solid rgba(147,51,234,.08);top:50%;left:50%;transform:translate(-50%,-55%);animation:ringPulse 4s ease-in-out infinite reverse;pointer-events:none;}
+  @keyframes ringPulse{0%,100%{opacity:.4;transform:translate(-50%,-55%) scale(1);}50%{opacity:1;transform:translate(-50%,-55%) scale(1.04);}}
+  .home-badge{background:rgba(147,51,234,.2);border:1px solid rgba(196,160,255,.25);color:#c084fc;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:7px 22px;border-radius:20px;margin-bottom:28px;}
+  .home-title{font-size:clamp(2.4rem,6vw,4.5rem);font-weight:800;text-align:center;line-height:1.05;margin-bottom:8px;color:#fff;}
+  .home-title .word1{background:linear-gradient(90deg,#c084fc,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .home-title .word2{background:linear-gradient(90deg,#818cf8,#6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .home-title .word3{color:rgba(255,255,255,.9);}
+  .home-sub{color:#9ca3af;font-size:.95rem;text-align:center;margin-bottom:40px;max-width:400px;line-height:1.7;}
+  .home-stats{display:flex;gap:36px;margin-bottom:48px;flex-wrap:wrap;justify-content:center;}
+  .stat{text-align:center;}
+  .stat-num{font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,#c084fc,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;}
+  .stat-label{font-size:.7rem;color:#6b7280;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-top:3px;}
+  .stat-divider{width:1px;background:rgba(196,160,255,.15);align-self:stretch;}
+  .home-cards{display:flex;gap:24px;flex-wrap:wrap;justify-content:center;}
+  .home-card{width:260px;background:rgba(255,255,255,.04);border:1.5px solid rgba(196,160,255,.15);border-radius:28px;padding:32px 26px 28px;text-align:center;cursor:pointer;transition:all .35s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden;}
+  .home-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#7c3aed,#6366f1);opacity:0;transition:.3s;}
+  .home-card:hover::after{opacity:1;}
+  .home-card:hover{transform:translateY(-10px) scale(1.02);border-color:rgba(196,160,255,.4);box-shadow:0 24px 48px rgba(124,58,237,.25),0 0 0 1px rgba(196,160,255,.1);}
+  .card-icon-wrap{width:70px;height:70px;border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:2rem;position:relative;}
+  .card-icon-wrap.linear-icon{background:linear-gradient(135deg,rgba(124,58,237,.35),rgba(99,102,241,.25));box-shadow:0 0 20px rgba(124,58,237,.2);}
+  .card-icon-wrap.nonlinear-icon{background:linear-gradient(135deg,rgba(16,185,129,.25),rgba(5,150,105,.2));box-shadow:0 0 20px rgba(16,185,129,.15);}
+  .card-title{font-size:1.25rem;font-weight:800;color:#e9d5ff;margin-bottom:8px;}
+  .card-desc{font-size:.8rem;color:#6b7280;line-height:1.6;margin-bottom:16px;}
+  .card-items{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;}
+  .chip{font-size:.68rem;padding:3px 10px;border-radius:8px;font-weight:600;}
+  .chip-linear{background:rgba(124,58,237,.2);color:#c4b5fd;border:1px solid rgba(196,160,255,.15);}
+  .chip-nonlinear{background:rgba(16,185,129,.15);color:#6ee7b7;border:1px solid rgba(16,185,129,.2);}
+  .card-arrow{display:inline-flex;align-items:center;gap:6px;margin-top:18px;color:#7c3aed;font-size:.82rem;font-weight:700;opacity:0;transform:translateX(-6px);transition:.3s;}
+  .home-card:hover .card-arrow{opacity:1;transform:translateX(0);}
+  .home-footer{position:absolute;bottom:24px;left:0;right:0;text-align:center;color:#374151;font-size:.75rem;}
+  #categoryPage{display:none;position:relative;z-index:1;min-height:100vh;}
+  .cat-header{background:rgba(255,255,255,.04);border-bottom:1px solid rgba(196,160,255,.15);padding:18px 30px;display:flex;align-items:center;gap:16px;}
+  .back-home-btn{background:rgba(147,51,234,.3);border:1px solid rgba(196,160,255,.3);color:#d8b4fe;padding:8px 18px;border-radius:10px;cursor:pointer;font-size:.85rem;font-weight:600;transition:.2s;display:flex;align-items:center;gap:6px;}
+  .back-home-btn:hover{background:rgba(147,51,234,.55);}
+  .cat-title{color:#e9d5ff;font-size:1.3rem;font-weight:700;}
+  .cat-layout{display:flex;min-height:calc(100vh - 65px);}
+  .sidebar{width:230px;background:rgba(255,255,255,.04);border-right:1px solid rgba(196,160,255,.12);padding:24px 14px;flex-shrink:0;}
+  .sidebar-label{font-size:.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#7c3aed;padding:0 8px;margin-bottom:12px;}
+  .sidebar-btn{width:100%;padding:11px 14px;margin-bottom:6px;background:transparent;border:1px solid transparent;border-radius:12px;color:#c4b5fd;font-size:.88rem;font-weight:500;cursor:pointer;text-align:left;transition:.2s;display:flex;align-items:center;gap:10px;}
+  .sidebar-btn:hover{background:rgba(147,51,234,.2);border-color:rgba(196,160,255,.25);}
+  .sidebar-btn.active{background:rgba(147,51,234,.35);border-color:rgba(196,160,255,.4);color:#e9d5ff;font-weight:700;}
+  .sidebar-icon{font-size:1rem;}
+  .main-content{flex:1;padding:30px;overflow-y:auto;}
+  .panel{background:rgba(255,255,255,.04);border:1px solid rgba(196,160,255,.12);border-radius:18px;padding:24px;margin-bottom:20px;}
+  .panel-title{font-size:1rem;font-weight:700;color:#a78bfa;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .panel-title::before{content:'';width:3px;height:18px;background:linear-gradient(#7c3aed,#6366f1);border-radius:3px;}
+  .panel-text{color:#d1d5db;font-size:.9rem;line-height:1.7;}
+  .char-list{list-style:none;display:flex;flex-direction:column;gap:6px;}
+  .char-list li{color:#c4b5fd;font-size:.88rem;padding:6px 12px;background:rgba(147,51,234,.1);border-radius:8px;border-left:2px solid #7c3aed;}
+  .ops-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+  .ops-input{background:rgba(255,255,255,.07);border:1.5px solid rgba(196,160,255,.25);color:#e9d5ff;padding:10px 16px;border-radius:12px;font-size:.9rem;width:180px;outline:none;transition:.2s;}
+  .ops-input:focus{border-color:#7c3aed;background:rgba(147,51,234,.1);}
+  .ops-input::placeholder{color:#6b7280;}
+  .op-btn{padding:10px 18px;border:none;border-radius:11px;font-size:.85rem;font-weight:600;cursor:pointer;transition:.2s;}
+  .op-btn:hover{transform:translateY(-2px);}
+  .btn-insert{background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;}
+  .btn-delete{background:linear-gradient(135deg,#dc2626,#9f1239);color:#fff;}
+  .btn-search{background:linear-gradient(135deg,#059669,#0d9488);color:#fff;}
+  .btn-display{background:linear-gradient(135deg,#d97706,#b45309);color:#fff;}
+  .explain-box{background:rgba(0,0,0,.25);border:1px solid rgba(196,160,255,.12);border-radius:14px;padding:16px 20px;font-family:'Courier New',monospace;font-size:.82rem;color:#c4b5fd;line-height:1.8;min-height:80px;white-space:pre-line;}
+  .explain-box .ok{color:#6ee7b7;}
+  .explain-box .err{color:#fca5a5;}
+  .explain-box .warn{color:#fcd34d;}
+  .viz-wrap{background:rgba(0,0,0,.2);border:1px solid rgba(196,160,255,.1);border-radius:14px;min-height:180px;padding:20px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:12px;overflow-x:auto;}
+  svg.viz-svg{overflow:visible;}
+  .arr-el{display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .arr-box{background:linear-gradient(135deg,rgba(124,58,237,.4),rgba(99,102,241,.3));border:2px solid #7c3aed;border-radius:10px;width:56px;height:56px;display:flex;align-items:center;justify-content:center;color:#e9d5ff;font-weight:700;font-size:1rem;transition:.3s;box-shadow:0 0 12px rgba(124,58,237,.3);}
+  .arr-idx{font-size:.7rem;color:#7c3aed;font-weight:600;}
+  .arr-arrow{color:#7c3aed;font-size:1.2rem;margin-top:14px;}
+  .stack-wrap{display:flex;flex-direction:column;align-items:center;gap:0;min-width:120px;}
+  .stack-el{background:linear-gradient(90deg,rgba(124,58,237,.4),rgba(99,102,241,.3));border:2px solid #7c3aed;border-radius:10px 10px 0 0;width:120px;padding:12px 0;text-align:center;color:#e9d5ff;font-weight:700;font-size:.95rem;border-bottom:none;transition:.3s;}
+  .stack-el:last-child{border-bottom:2px solid #7c3aed;}
+  .stack-top-label{background:#7c3aed;color:#fff;font-size:.65rem;font-weight:700;padding:1px 7px;border-radius:4px;margin-left:6px;}
+  .stack-base{width:140px;height:6px;background:#7c3aed;border-radius:0 0 6px 6px;margin-top:0;}
+  .queue-wrap{display:flex;align-items:center;gap:0;}
+  .queue-el{background:linear-gradient(135deg,rgba(124,58,237,.4),rgba(99,102,241,.3));border:2px solid #7c3aed;padding:12px 18px;color:#e9d5ff;font-weight:700;font-size:.95rem;border-right:none;transition:.3s;}
+  .queue-el:first-child{border-radius:12px 0 0 12px;}
+  .queue-el:last-child{border-right:2px solid #7c3aed;border-radius:0 12px 12px 0;}
+  .queue-el:only-child{border-radius:12px;border-right:2px solid #7c3aed;}
+  .queue-label{font-size:.7rem;color:#7c3aed;font-weight:700;text-align:center;margin-top:4px;}
+  .q-arrow{color:#7c3aed;font-size:1.3rem;padding:0 2px;}
+  .ll-wrap{display:flex;align-items:center;gap:0;flex-wrap:wrap;}
+  .ll-node{display:flex;align-items:center;}
+  .ll-box{background:linear-gradient(135deg,rgba(124,58,237,.4),rgba(99,102,241,.3));border:2px solid #7c3aed;border-radius:10px;display:flex;overflow:hidden;}
+  .ll-val{padding:10px 14px;color:#e9d5ff;font-weight:700;font-size:.9rem;border-right:1px solid rgba(196,160,255,.2);}
+  .ll-ptr{padding:10px 10px;color:#a78bfa;font-size:.75rem;font-weight:600;}
+  .ll-arrow{color:#7c3aed;font-size:1.3rem;margin:0 4px;}
+  .ll-head{font-size:.7rem;color:#7c3aed;font-weight:700;margin-right:8px;}
+  .ll-null{color:#6b7280;font-size:.8rem;font-weight:600;margin-left:6px;}
+  #toast{position:fixed;bottom:30px;right:30px;z-index:999;padding:12px 22px;border-radius:12px;font-weight:600;font-size:.88rem;opacity:0;transition:opacity .3s;pointer-events:none;}
+  #toast.show{opacity:1;}
+  #toast.toast-ok{background:rgba(16,185,129,.9);color:#fff;}
+  #toast.toast-err{background:rgba(220,38,38,.9);color:#fff;}
+  #toast.toast-info{background:rgba(124,58,237,.9);color:#fff;}
+  .ds-page-title{font-size:1.8rem;font-weight:800;color:#e9d5ff;margin-bottom:22px;display:flex;align-items:center;gap:12px;}
+  .ds-page-title .ds-emoji{font-size:1.6rem;}
+  .back-cat-btn{background:rgba(99,102,241,.25);border:1px solid rgba(165,180,252,.3);color:#a5b4fc;padding:8px 16px;border-radius:10px;cursor:pointer;font-size:.83rem;font-weight:600;transition:.2s;display:inline-flex;align-items:center;gap:6px;margin-bottom:20px;}
+  .back-cat-btn:hover{background:rgba(99,102,241,.45);}
+  .op-hint{font-size:.78rem;color:#6b7280;margin-top:6px;}
+  .empty-viz{color:#4b5563;font-size:.9rem;}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+
+<!-- HOME PAGE -->
+<div id="homePage">
+  <div class="home-ring"></div>
+  <div class="home-ring2"></div>
+  <div class="home-badge">✦ Interactive Learning Tool ✦</div>
+  <div class="home-title">
+    <div class="word1">Data</div>
+    <div class="word2">Structure</div>
+    <div class="word3">Visualizer</div>
+  </div>
+  <p class="home-sub">Build, explore and interact with core data structures through live animations and step-by-step explanations.</p>
+  <div class="home-stats">
+    <div class="stat"><div class="stat-num">7</div><div class="stat-label">Structures</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><div class="stat-num">4</div><div class="stat-label">Operations</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><div class="stat-num">2</div><div class="stat-label">Categories</div></div>
+  </div>
+  <div class="home-cards">
+    <div class="home-card" onclick="openCategory('linear')">
+      <div class="card-icon-wrap linear-icon">📏</div>
+      <div class="card-title">Linear</div>
+      <div class="card-desc">Sequential structures where elements are arranged one after another in memory.</div>
+      <div class="card-items">
+        <span class="chip chip-linear">Array</span>
+        <span class="chip chip-linear">Stack</span>
+        <span class="chip chip-linear">Queue</span>
+        <span class="chip chip-linear">Linked List</span>
+      </div>
+      <div class="card-arrow">Explore → </div>
+    </div>
+    <div class="home-card" onclick="openCategory('nonlinear')">
+      <div class="card-icon-wrap nonlinear-icon">🌳</div>
+      <div class="card-title">Non-Linear</div>
+      <div class="card-desc">Hierarchical and networked structures where elements connect in complex ways.</div>
+      <div class="card-items">
+        <span class="chip chip-nonlinear">BST Tree</span>
+        <span class="chip chip-nonlinear">Max Heap</span>
+        <span class="chip chip-nonlinear">Graph</span>
+      </div>
+      <div class="card-arrow">Explore → </div>
+    </div>
+  </div>
+  <div class="home-footer">Click a category to begin exploring</div>
+</div>
+
+<!-- CATEGORY PAGE -->
+<div id="categoryPage">
+  <div class="cat-header">
+    <button class="back-home-btn" onclick="goHome()">🏠 Back to Home</button>
+    <div class="cat-title" id="catLabel">Linear Structures</div>
+  </div>
+  <div class="cat-layout">
+    <div class="sidebar">
+      <div class="sidebar-label" id="sidebarLabel">Structures</div>
+      <div id="sidebarBtns"></div>
+    </div>
+    <div class="main-content" id="mainContent">
+      <div style="display:flex;align-items:center;justify-content:center;height:300px;color:#4b5563;font-size:1rem;">
+        ← Select a data structure from the sidebar
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const DS_INFO = {
+  Array:{
+    emoji:'📦', name:'Array',
+    def:'An Array is a collection of elements stored at contiguous memory locations. It is the simplest and most widely used data structure.',
+    chars:['Fixed size (static allocation)','Elements accessed by index (0-based)','Same data type elements','Cache-friendly due to contiguous memory','Random access in O(1) time'],
+    hint:'Enter a number and click an operation.',
+    type:'array'
+  },
+  Stack:{
+    emoji:'📚', name:'Stack',
+    def:'A Stack is a linear data structure that follows the Last In First Out (LIFO) principle. The element inserted last is the first to be removed.',
+    chars:['LIFO — Last In First Out','Push adds to top, Pop removes from top','Only top element is accessible','Used in function calls, undo operations','Can be implemented using Array or Linked List'],
+    hint:'Insert: number enter chesi click cheyyi. Delete (Pop): number అక్కరలేదు — directly TOP element remove అవుతుంది (LIFO).',
+    type:'stack'
+  },
+  Queue:{
+    emoji:'🚶', name:'Queue',
+    def:'A Queue is a linear data structure that follows the First In First Out (FIFO) principle. The element inserted first is the first to be removed.',
+    chars:['FIFO — First In First Out','Enqueue adds to Rear, Dequeue removes from Front','Both ends are used for operations','Used in scheduling, BFS, print queue','Can be implemented using Array or Linked List'],
+    hint:'Delete removes only if value is at FRONT (FIFO rule).',
+    type:'queue'
+  },
+  'Linked List':{
+    emoji:'🔗', name:'Linked List',
+    def:'A Linked List is a linear data structure where elements (nodes) are stored at non-contiguous memory locations and connected via pointers.',
+    chars:['Dynamic size — grows/shrinks at runtime','Each node has data + pointer to next node','No random access — must traverse from HEAD','Insert/Delete efficient without shifting','Extra memory for pointers'],
+    hint:'Enter a number to insert/delete/search.',
+    type:'ll'
+  },
+  Tree:{
+    emoji:'🌲', name:'Tree (BST)',
+    def:'A Binary Search Tree (BST) is a non-linear hierarchical data structure where each node has at most 2 children. Left child < Parent < Right child.',
+    chars:['Hierarchical structure with root node','Left subtree has values smaller than root','Right subtree has values greater than root','In-order traversal gives sorted output','Used in searching and sorting algorithms'],
+    hint:'Enter a number to insert into BST.',
+    type:'tree'
+  },
+  Heap:{
+    emoji:'⛰️', name:'Heap (Max Heap)',
+    def:'A Heap is a complete binary tree that satisfies the heap property. In a Max Heap, every parent node is greater than or equal to its children.',
+    chars:['Complete binary tree structure','Max Heap: parent ≥ children at all levels','Root is always the maximum element','Heapify maintains the heap property','Used in Priority Queue and Heap Sort'],
+    hint:'Insert: number enter cheyyi. Delete: number అక్కరలేదు — MAX (root) element automatically remove అవుతుంది.',
+    type:'heap'
+  },
+  Graph:{
+    emoji:'🕸️', name:'Graph',
+    def:'A Graph is a non-linear data structure consisting of vertices (nodes) and edges (connections). It represents pairwise relationships between objects.',
+    chars:['Consists of Vertices (V) and Edges (E)','Can be Directed or Undirected','Can be Weighted or Unweighted','Used in social networks, maps, routing','Traversed via BFS and DFS'],
+    hint:'Enter a number to add/delete/search vertex.',
+    type:'graph'
+  }
+};
+
+const CATEGORIES = {
+  linear:  { label:'Linear Structures',     structures:['Array','Stack','Queue','Linked List'] },
+  nonlinear:{ label:'Non-Linear Structures', structures:['Tree','Heap','Graph'] }
+};
+
+const SIDEBAR_ICONS = {
+  Array:'📦', Stack:'📚', Queue:'🚶', 'Linked List':'🔗',
+  Tree:'🌲', Heap:'⛰️', Graph:'🕸️'
+};
+
+let currentCat = null;
+let currentDS  = null;
+let dsData     = {};
+
+function getState(ds){ if(!dsData[ds]) dsData[ds]={arr:[],tree:null,heap:[],graph:{verts:[],edges:[]}}; return dsData[ds]; }
+
+// ── INPUT AUTO-CLEAR + FOCUS after every operation ──
+function clearInput(){
+  const inp = document.getElementById('opInput');
+  if(inp){ inp.value = ''; inp.focus(); }
+}
+
+function goHome(){
+  document.getElementById('homePage').style.display='flex';
+  document.getElementById('categoryPage').style.display='none';
+}
+
+function openCategory(cat){
+  currentCat = cat;
+  const info = CATEGORIES[cat];
+  document.getElementById('homePage').style.display='none';
+  document.getElementById('categoryPage').style.display='block';
+  document.getElementById('catLabel').textContent = info.label;
+  document.getElementById('sidebarLabel').textContent = cat==='linear'?'Linear':'Non-Linear';
+  const sb = document.getElementById('sidebarBtns');
+  sb.innerHTML='';
+  info.structures.forEach(ds=>{
+    const btn = document.createElement('button');
+    btn.className='sidebar-btn';
+    btn.innerHTML=`<span class="sidebar-icon">${SIDEBAR_ICONS[ds]}</span>${ds}`;
+    btn.onclick=()=>openDS(ds);
+    btn.id='sbtn-'+ds.replace(' ','_');
+    sb.appendChild(btn);
+  });
+  document.getElementById('mainContent').innerHTML=`<div style="display:flex;align-items:center;justify-content:center;height:300px;color:#4b5563;font-size:.95rem;">← Select a data structure from the sidebar</div>`;
+  currentDS=null;
+}
+
+function openDS(dsName){
+  currentDS = dsName;
+  document.querySelectorAll('.sidebar-btn').forEach(b=>b.classList.remove('active'));
+  const sb = document.getElementById('sbtn-'+dsName.replace(' ','_'));
+  if(sb) sb.classList.add('active');
+  const info = DS_INFO[dsName];
+  const charItems = info.chars.map(c=>`<li>${c}</li>`).join('');
+  const isStack = dsName === 'Stack';
+  const isHeap  = dsName === 'Heap';
+  const deleteLabel = isStack ? '🗑 Pop (TOP)' : isHeap ? '🗑 Del Max' : 'Delete';
+
+  document.getElementById('mainContent').innerHTML=`
+    <button class="back-cat-btn" onclick="openCategory('${currentCat}')">◀ Back to ${CATEGORIES[currentCat].label.split(' ')[0]}</button>
+    <div class="ds-page-title"><span class="ds-emoji">${info.emoji}</span>${info.name}</div>
+    <div class="panel">
+      <div class="panel-title">Definition</div>
+      <p class="panel-text">${info.def}</p>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Characteristics</div>
+      <ul class="char-list">${charItems}</ul>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Operations</div>
+      <div class="ops-row">
+        <input class="ops-input" id="opInput" placeholder="Enter value" type="number">
+        <button class="op-btn btn-insert"  onclick="opInsert()">Insert</button>
+        <button class="op-btn btn-delete"  onclick="opDelete()">${deleteLabel}</button>
+        <button class="op-btn btn-search"  onclick="opSearch()">Search</button>
+        <button class="op-btn btn-display" onclick="opDisplay()">Display</button>
+      </div>
+      <div class="op-hint">${info.hint}</div>
+      <br>
+      <div class="panel-title">Explanation</div>
+      <div class="explain-box" id="explainBox">Ready. Enter a value and click an operation.</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Visualization</div>
+      <div class="viz-wrap" id="vizWrap"><span class="empty-viz">Insert elements to visualize</span></div>
+    </div>
+  `;
+  renderViz();
+}
+
+function getInput(){ return parseInt(document.getElementById('opInput')?.value?.trim()); }
+function explain(html){ const b=document.getElementById('explainBox'); if(b) b.innerHTML=html; }
+function showToast(msg,type='info'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='show toast-'+type;
+  clearTimeout(t._t); t._t=setTimeout(()=>t.className='',2800);
+}
+
+function complexityOf(dsName,op){
+  const map={
+    Array:{Insert:'O(1) amortized',Delete:'O(n)',Search:'O(n)'},
+    Stack:{Insert:'O(1)',Delete:'O(1)'},
+    Queue:{Insert:'O(1)',Delete:'O(1)'},
+    'Linked List':{Insert:'O(n)',Delete:'O(n)',Search:'O(n)'},
+    Tree:{Insert:'O(log n) avg',Delete:'O(log n) avg',Search:'O(log n) avg'},
+    Heap:{Insert:'O(log n)',Delete:'O(log n)',Search:'O(n)'},
+    Graph:{Insert:'O(1)',Delete:'O(V+E)',Search:'O(V+E)'}
+  };
+  return (map[dsName]&&map[dsName][op])||'O(?)';
+}
+
+// ── INSERT ──
+function opInsert(){
+  const v = getInput();
+  if(isNaN(v)){ showToast('Please enter a valid number','err'); return; }
+  const ds = currentDS, st = getState(ds);
+  let before, after, msg2;
+
+  if(ds==='Array'||ds==='Stack'||ds==='Queue'||ds==='Linked List'){
+    before=[...st.arr]; st.arr.push(v); after=[...st.arr];
+    msg2=`${v} was added to the ${ds==='Stack'?'top':ds==='Queue'?'rear':'end'} of the ${ds}.`;
+  } else if(ds==='Tree'){
+    before='[BST before]'; bstInsert(st,v); after='[BST after]';
+    msg2=`${v} was inserted into the BST.`;
+  } else if(ds==='Heap'){
+    before=[...st.heap]; st.heap.push(v); heapifyUp(st.heap,st.heap.length-1); after=[...st.heap];
+    msg2=`${v} inserted and heapified up. Root (max) = ${st.heap[0]}.`;
+  } else if(ds==='Graph'){
+    before=[...st.graph.verts];
+    if(st.graph.verts.includes(v)){ showToast(`Vertex ${v} already exists`,'err'); return; }
+    if(st.graph.verts.length>0){ const last=st.graph.verts[st.graph.verts.length-1]; st.graph.edges.push([last,v]); }
+    st.graph.verts.push(v); after=[...st.graph.verts];
+    msg2=`Vertex ${v} added to graph.`;
+  }
+
+  explain(`<span class="ok">✅ INSERT ${v}</span>
+Operation : Insert
+Before    : [${Array.isArray(before)?before.join(', '):before}]
+Inserted  : ${v}
+After     : [${Array.isArray(after)?after.join(', '):after}]
+Complexity: ${complexityOf(ds,'Insert')}
+─────────────────────────
+${msg2}`);
+  showToast(`${v} inserted`,'ok');
+  clearInput();
+  renderViz();
+}
+
+// ── DELETE ──
+function opDelete(){
+  const ds = currentDS, st = getState(ds);
+
+  // STACK — number అడగకుండా directly TOP pop
+  if(ds==='Stack'){
+    if(st.arr.length===0){
+      explain(`<span class="err">❌ Stack is EMPTY — nothing to pop!</span>`);
+      showToast('Stack is empty','err');
+      clearInput();
+      return;
+    }
+    const before=[...st.arr];
+    const top = st.arr[st.arr.length-1];
+    st.arr.pop();
+    explain(`<span class="ok">✅ POP — TOP Element Removed</span>
+Operation : Pop (LIFO)
+Before    : [${before.join(', ')}]  ← TOP: ${top}
+Popped    : ${top}
+After     : [${st.arr.join(', ')}]${st.arr.length?`  ← New TOP: ${st.arr[st.arr.length-1]}`:'  (Stack is now empty)'}
+Complexity: O(1)
+─────────────────────────
+LIFO rule: "${top}" was automatically removed from top.`);
+    showToast(`${top} popped from stack`,'ok');
+    clearInput();
+    renderViz();
+    return;
+  }
+
+  // HEAP — number అడగకుండా directly MAX delete
+  if(ds==='Heap'){
+    if(st.heap.length===0){
+      explain(`<span class="err">❌ Heap is EMPTY — nothing to delete!</span>`);
+      showToast('Heap is empty','err');
+      clearInput();
+      return;
+    }
+    const before=[...st.heap];
+    const maxVal = st.heap[0];
+    st.heap[0] = st.heap[st.heap.length-1];
+    st.heap.pop();
+    if(st.heap.length>0) heapifyDown(st.heap,0);
+    explain(`<span class="ok">✅ DELETE MAX from Heap</span>
+Operation : Delete Max (root removed)
+Before    : [${before.join(', ')}]  ← MAX: ${maxVal}
+Deleted   : ${maxVal} (was root/max)
+After     : [${st.heap.join(', ')}]${st.heap.length?`  ← New MAX: ${st.heap[0]}`:'  (Heap is now empty)'}
+Complexity: O(log n)
+─────────────────────────
+Max Heap rule: Root "${maxVal}" deleted, heap re-heapified.`);
+    showToast(`${maxVal} (max) deleted from heap`,'ok');
+    clearInput();
+    renderViz();
+    return;
+  }
+
+  // All other DS — number required
+  const v = getInput();
+  if(isNaN(v)){ showToast('Please enter a valid number','err'); return; }
+
+  if(ds==='Array'||ds==='Linked List'){
+    const idx=st.arr.indexOf(v);
+    if(idx===-1){ explain(`<span class="err">❌ DELETE ${v}</span>\n${v} not found in ${ds}!\nNo element deleted.`); showToast(`${v} not found`,'err'); clearInput(); return; }
+    const before=[...st.arr]; st.arr.splice(idx,1);
+    explain(`<span class="ok">✅ DELETE ${v}</span>
+Operation : Delete
+Before    : [${before.join(', ')}]
+Deleted   : ${v} (index ${idx})
+After     : [${st.arr.join(', ')}]
+Complexity: ${complexityOf(ds,'Delete')}`);
+    showToast(`${v} deleted`,'ok');
+  }
+  else if(ds==='Queue'){
+    if(st.arr.length===0){ explain(`<span class="err">❌ Queue is EMPTY</span>`); showToast('Queue is empty','err'); clearInput(); return; }
+    if(!st.arr.includes(v)){ explain(`<span class="err">❌ ${v} not found in Queue!\nCannot delete.</span>`); showToast(`${v} not found`,'err'); clearInput(); return; }
+    const front=st.arr[0];
+    if(front!==v){ explain(`<span class="warn">⚠️ ${v} is NOT at the FRONT!\nFront = ${front}\nQueue follows FIFO — can only dequeue from front.</span>`); showToast(`${v} not at front`,'err'); clearInput(); return; }
+    const before=[...st.arr]; st.arr.shift();
+    explain(`<span class="ok">✅ DEQUEUE ${v}</span>
+Operation : Dequeue (FIFO)
+Before    : FRONT [${before.join(' → ')}] REAR
+Dequeued  : ${v}
+After     : FRONT [${st.arr.join(' → ')}] REAR
+Complexity: O(1)`);
+    showToast(`${v} dequeued`,'ok');
+  }
+  else if(ds==='Tree'){
+    if(!bstSearch(st.tree,v)){ explain(`<span class="err">❌ ${v} not found in BST!</span>`); showToast(`${v} not found`,'err'); clearInput(); return; }
+    st.tree=bstDelete(st.tree,v);
+    explain(`<span class="ok">✅ BST DELETE ${v}</span>\n${v} removed from BST.\nComplexity: O(log n) avg`);
+    showToast(`${v} deleted`,'ok');
+  }
+  else if(ds==='Graph'){
+    if(!st.graph.verts.includes(v)){ explain(`<span class="err">❌ Vertex ${v} not found in Graph!</span>`); showToast(`${v} not found`,'err'); clearInput(); return; }
+    st.graph.verts=st.graph.verts.filter(x=>x!==v);
+    st.graph.edges=st.graph.edges.filter(e=>e[0]!==v&&e[1]!==v);
+    explain(`<span class="ok">✅ Vertex ${v} removed</span>\nAll edges connected to ${v} also removed.\nComplexity: O(V+E)`);
+    showToast(`Vertex ${v} removed`,'ok');
+  }
+
+  clearInput();
+  renderViz();
+}
+
+// ── SEARCH ──
+function opSearch(){
+  const v=getInput();
+  if(isNaN(v)){ showToast('Please enter a valid number','err'); return; }
+  const ds=currentDS, st=getState(ds);
+  let found=false;
+  if(ds==='Array'||ds==='Stack'||ds==='Queue'||ds==='Linked List') found=st.arr.includes(v);
+  else if(ds==='Tree') found=bstSearch(st.tree,v);
+  else if(ds==='Heap') found=st.heap.includes(v);
+  else if(ds==='Graph') found=st.graph.verts.includes(v);
+  if(found){
+    explain(`<span class="ok">✅ SEARCH ${v} — FOUND</span>
+Value     : ${v}
+Result    : Found in ${ds} ✅
+Complexity: ${complexityOf(ds,'Search')}`);
+    showToast(`${v} found`,'ok');
+  } else {
+    explain(`<span class="err">❌ SEARCH ${v} — NOT FOUND</span>
+Value     : ${v}
+Result    : ${v} does not exist in ${ds}
+Complexity: ${complexityOf(ds,'Search')}`);
+    showToast(`${v} not found`,'err');
+  }
+  clearInput();
+}
+
+// ── DISPLAY ──
+function opDisplay(){
+  const ds=currentDS, st=getState(ds);
+  let content='';
+  if(ds==='Array'||ds==='Linked List') content=st.arr.length?`[${st.arr.join(', ')}]`:'(empty)';
+  else if(ds==='Stack') content=st.arr.length?`TOP → [${[...st.arr].reverse().join(', ')}]`:'(empty)';
+  else if(ds==='Queue') content=st.arr.length?`FRONT [${st.arr.join(' → ')}] REAR`:'(empty)';
+  else if(ds==='Tree') content=st.tree?`In-order: [${bstInorder(st.tree).join(', ')}]`:'(empty tree)';
+  else if(ds==='Heap') content=st.heap.length?`[${st.heap.join(', ')}]  root(max)=${st.heap[0]}`:'(empty)';
+  else if(ds==='Graph') content=st.graph.verts.length?`Vertices: {${st.graph.verts.join(', ')}}\nEdges: ${st.graph.edges.map(e=>`${e[0]}—${e[1]}`).join(', ')||'none'}`:'(empty)';
+  explain(`<span class="ok">📋 DISPLAY — ${ds.toUpperCase()}</span>\n${content}`);
+  clearInput();
+  renderViz();
+}
+
+// ── RENDER ──
+function renderViz(){
+  const ds=currentDS, st=getState(ds), wrap=document.getElementById('vizWrap');
+  if(!wrap) return;
+  wrap.innerHTML='';
+  if(ds==='Array') renderArray(st.arr,wrap);
+  else if(ds==='Stack') renderStack(st.arr,wrap);
+  else if(ds==='Queue') renderQueue(st.arr,wrap);
+  else if(ds==='Linked List') renderLL(st.arr,wrap);
+  else if(ds==='Tree') renderTree(st.tree,wrap);
+  else if(ds==='Heap') renderHeap(st.heap,wrap);
+  else if(ds==='Graph') renderGraph(st.graph,wrap);
+}
+
+function renderArray(arr,wrap){
+  if(!arr.length){wrap.innerHTML='<span class="empty-viz">Insert elements to visualize</span>';return;}
+  arr.forEach((v,i)=>{
+    const el=document.createElement('div');el.className='arr-el';
+    el.innerHTML=`<div class="arr-box">${v}</div><div class="arr-idx">[${i}]</div>`;
+    wrap.appendChild(el);
+    if(i<arr.length-1){const a=document.createElement('span');a.className='arr-arrow';a.textContent='→';wrap.appendChild(a);}
+  });
+}
+
+function renderStack(arr,wrap){
+  if(!arr.length){wrap.innerHTML='<span class="empty-viz">Insert elements to visualize</span>';return;}
+  const sw=document.createElement('div');sw.className='stack-wrap';
+  [...arr].reverse().forEach((v,i)=>{
+    const el=document.createElement('div');el.className='stack-el';
+    el.innerHTML=v+(i===0?'<span class="stack-top-label">TOP</span>':'');
+    sw.appendChild(el);
+  });
+  const base=document.createElement('div');base.className='stack-base';sw.appendChild(base);
+  wrap.appendChild(sw);
+}
+
+function renderQueue(arr,wrap){
+  if(!arr.length){wrap.innerHTML='<span class="empty-viz">Insert elements to visualize</span>';return;}
+  const qw=document.createElement('div');qw.style.cssText='display:flex;flex-direction:column;align-items:center;gap:6px;';
+  const row=document.createElement('div');row.className='queue-wrap';
+  arr.forEach((v,i)=>{
+    const el=document.createElement('div');el.className='queue-el';el.textContent=v;
+    row.appendChild(el);
+    if(i<arr.length-1){const a=document.createElement('span');a.className='q-arrow';a.textContent='→';row.appendChild(a);}
+  });
+  const labels=document.createElement('div');labels.style.cssText='display:flex;gap:4px;justify-content:space-between;width:100%;';
+  labels.innerHTML=`<span class="queue-label">FRONT</span><span class="queue-label">REAR</span>`;
+  qw.appendChild(row);qw.appendChild(labels);wrap.appendChild(qw);
+}
+
+function renderLL(arr,wrap){
+  if(!arr.length){wrap.innerHTML='<span class="empty-viz">Insert elements to visualize</span>';return;}
+  const lw=document.createElement('div');lw.className='ll-wrap';
+  const head=document.createElement('span');head.className='ll-head';head.textContent='HEAD →';lw.appendChild(head);
+  arr.forEach((v,i)=>{
+    const node=document.createElement('div');node.className='ll-node';
+    const box=document.createElement('div');box.className='ll-box';
+    const val=document.createElement('div');val.className='ll-val';val.textContent=v;
+    const ptr=document.createElement('div');ptr.className='ll-ptr';ptr.textContent='→';
+    box.appendChild(val);box.appendChild(ptr);node.appendChild(box);
+    if(i<arr.length-1){const a=document.createElement('span');a.className='ll-arrow';a.textContent='';node.appendChild(a);}
+    lw.appendChild(node);
+  });
+  const nullSpan=document.createElement('span');nullSpan.className='ll-null';nullSpan.textContent='NULL';lw.appendChild(nullSpan);
+  wrap.appendChild(lw);
+}
+
+function bstInsert(st,v){
+  function ins(node,v){if(!node)return{val:v,left:null,right:null};if(v<node.val)node.left=ins(node.left,v);else if(v>node.val)node.right=ins(node.right,v);return node;}
+  st.tree=ins(st.tree,v);
+}
+function bstSearch(node,v){if(!node)return false;if(node.val===v)return true;return v<node.val?bstSearch(node.left,v):bstSearch(node.right,v);}
+function bstDelete(node,v){
+  if(!node)return null;
+  if(v<node.val){node.left=bstDelete(node.left,v);return node;}
+  if(v>node.val){node.right=bstDelete(node.right,v);return node;}
+  if(!node.left)return node.right;
+  if(!node.right)return node.left;
+  let min=node.right;while(min.left)min=min.left;
+  node.val=min.val;node.right=bstDelete(node.right,min.val);return node;
+}
+function bstInorder(node){if(!node)return[];return[...bstInorder(node.left),node.val,...bstInorder(node.right)];}
+
+function renderTree(root,wrap){
+  if(!root){wrap.innerHTML='<span class="empty-viz">Insert elements to visualize</span>';return;}
+  const W=560,H=300,r=22;
+  function positions(node,x,y,dx,res){if(!node)return;res.push({node,x,y});positions(node.left,x-dx,y+70,dx/2,res);positions(node.right,x+dx,y+70,dx/2,res);}
+  const nodes=[];positions(root,W/2,40,110,nodes);
+  const svgEl=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svgEl.setAttribute('viewBox',`0 0 ${W} ${H}`);svgEl.setAttribute('width',W);svgEl.setAttribute('height',H);svgEl.className='viz-svg';
+  nodes.forEach(({node,x,y})=>{
+    ['left','right'].forEach(side=>{
+      const child=node[side];
+      if(child){const cn=nodes.find(n=>n.node===child);if(cn){const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',x);line.setAttribute('y1',y+r);line.setAttribute('x2',cn.x);line.setAttribute('y2',cn.y-r);line.setAttribute('stroke','#7c3aed');line.setAttribute('stroke-width','2');svgEl.appendChild(line);}}
+    });
+  });
+  nodes.forEach(({node,x,y})=>{
+    const isRoot=node===root;
+    const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx',x);circle.setAttribute('cy',y);circle.setAttribute('r',r);
+    circle.setAttribute('fill',isRoot?'#7c3aed':'rgba(124,58,237,.3)');circle.setAttribute('stroke','#a78bfa');circle.setAttribute('stroke-width','2');
+    svgEl.appendChild(circle);
+    const text=document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x',x);text.setAttribute('y',y+5);text.setAttribute('text-anchor','middle');
+    text.setAttribute('fill','#e9d5ff');text.setAttribute('font-size','13');text.setAttribute('font-weight','700');
+    text.textContent=node.val;svgEl.appendChild(text);
+  });
+  wrap.appendChild(svgEl);
+}
+
+function heapifyUp(h,i){while(i>0){const p=Math.floor((i-1)/2);if(h[p]<h[i]){[h[p],h[i]]=[h[i],h[p]];i=p;}else break;}}
+function heapifyDown(h,i){const n=h.length;while(true){let max=i,l=2*i+1,r=2*i+2;if(l<n&&h[l]>h[max])max=l;if(r<n&&h[r]>h[max])max=r;if(max===i)break;[h[i],h[max]]=[h[max],h[i]];i=max;}}
+
+function renderHeap(heap,wrap){
+  if(!heap.length){wrap.innerHTML='<span class="empty-viz">Insert elements to visualize</span>';return;}
+  const W=560,H=260,r=22;
+  const svgEl=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svgEl.setAttribute('viewBox',`0 0 ${W} ${H}`);svgEl.setAttribute('width',W);svgEl.setAttribute('height',H);svgEl.className='viz-svg';
+  function pos(i){const level=Math.floor(Math.log2(i+1));const p=i-((1<<level)-1);const total=1<<level;const x=W/(total+1)*(p+1);const y=40+level*70;return{x,y};}
+  for(let i=0;i<heap.length;i++){
+    const p=Math.floor((i-1)/2);
+    if(i>0&&p<heap.length){const pp=pos(p),cp=pos(i);const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',pp.x);line.setAttribute('y1',pp.y+r);line.setAttribute('x2',cp.x);line.setAttribute('y2',cp.y-r);line.setAttribute('stroke','#7c3aed');line.setAttribute('stroke-width','2');svgEl.appendChild(line);}
+  }
+  for(let i=0;i<heap.length;i++){
+    const {x,y}=pos(i);const isRoot=i===0;
+    const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx',x);circle.setAttribute('cy',y);circle.setAttribute('r',r);
+    circle.setAttribute('fill',isRoot?'#7c3aed':'rgba(124,58,237,.3)');circle.setAttribute('stroke',isRoot?'#c084fc':'#a78bfa');circle.setAttribute('stroke-width','2');
+    svgEl.appendChild(circle);
+    const text=document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x',x);text.setAttribute('y',y+5);text.setAttribute('text-anchor','middle');
+    text.setAttribute('fill','#e9d5ff');text.setAttribute('font-size','13');text.setAttribute('font-weight','700');
+    text.textContent=heap[i];svgEl.appendChild(text);
+    if(isRoot){const label=document.createElementNS('http://www.w3.org/2000/svg','text');label.setAttribute('x',x);label.setAttribute('y',y-r-6);label.setAttribute('text-anchor','middle');label.setAttribute('fill','#c084fc');label.setAttribute('font-size','10');label.setAttribute('font-weight','700');label.textContent='MAX';svgEl.appendChild(label);}
+  }
+  wrap.appendChild(svgEl);
+}
+
+function renderGraph(g,wrap){
+  if(!g.verts.length){wrap.innerHTML='<span class="empty-viz">Insert vertices to visualize</span>';return;}
+  const W=520,H=300,cx=W/2,cy=H/2,R=110,r=24;
+  const svgEl=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svgEl.setAttribute('viewBox',`0 0 ${W} ${H}`);svgEl.setAttribute('width',W);svgEl.setAttribute('height',H);svgEl.className='viz-svg';
+  const n=g.verts.length;const vPos={};
+  g.verts.forEach((v,i)=>{const angle=(2*Math.PI*i/n)-Math.PI/2;vPos[v]={x:cx+R*Math.cos(angle),y:cy+R*Math.sin(angle)};});
+  g.edges.forEach(([a,b])=>{if(!vPos[a]||!vPos[b])return;const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',vPos[a].x);line.setAttribute('y1',vPos[a].y);line.setAttribute('x2',vPos[b].x);line.setAttribute('y2',vPos[b].y);line.setAttribute('stroke','#7c3aed');line.setAttribute('stroke-width','2');line.setAttribute('opacity','0.7');svgEl.appendChild(line);});
+  g.verts.forEach(v=>{const {x,y}=vPos[v];const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');circle.setAttribute('cx',x);circle.setAttribute('cy',y);circle.setAttribute('r',r);circle.setAttribute('fill','rgba(124,58,237,.4)');circle.setAttribute('stroke','#a78bfa');circle.setAttribute('stroke-width','2');svgEl.appendChild(circle);const text=document.createElementNS('http://www.w3.org/2000/svg','text');text.setAttribute('x',x);text.setAttribute('y',y+5);text.setAttribute('text-anchor','middle');text.setAttribute('fill','#e9d5ff');text.setAttribute('font-size','13');text.setAttribute('font-weight','700');text.textContent=v;svgEl.appendChild(text);});
+  wrap.appendChild(svgEl);
+}
+
+// PARTICLES
+(function(){
+  const canvas=document.getElementById('particles');
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
+  const pts=Array.from({length:55},()=>({x:Math.random()*canvas.width,y:canvas.height+Math.random()*canvas.height,r:Math.random()*2.5+0.5,speed:Math.random()*0.4+0.2,color:`hsl(${Math.floor(Math.random()*60+260)},80%,${Math.floor(Math.random()*30+55)}%)`}));
+  function tick(){ctx.clearRect(0,0,canvas.width,canvas.height);pts.forEach(p=>{p.y-=p.speed;if(p.y<-10){p.y=canvas.height+10;p.x=Math.random()*canvas.width;}ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.color;ctx.globalAlpha=0.6;ctx.fill();ctx.globalAlpha=1;});requestAnimationFrame(tick);}
+  tick();
+})();
+</script>
+</body>
+</html>
